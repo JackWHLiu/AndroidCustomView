@@ -1,5 +1,5 @@
-# AndroidCustomView
-Android绘图6要素
+# Android绘图6要素
+
 
 
 
