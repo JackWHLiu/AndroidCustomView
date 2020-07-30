@@ -3,9 +3,7 @@
 
 
 
-
-
-​		所有要参与Android自定义控件开发的开发者，绘图6要素都是他入门的必经之路。这6要素是指Canvas（画板）、Paint（画笔）、Bitmap（位图）、Drawable（可绘制的）、Rect（矩形）和Path（路径）。为什么说这些是最基本的呢？
+		所有要参与Android自定义控件开发的开发者，绘图6要素都是他入门的必经之路。这6要素是指Canvas（画板）、Paint（画笔）、Bitmap（位图）、Drawable（可绘制的）、Rect（矩形）和Path（路径）。为什么说这些是最基本的呢？
 
 ![img](https://img-blog.csdnimg.cn/20200729102322356.png)![点击并拖拽以移动](data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==)肯定是有依据的。系统源代码注释说是4个基本组件，我觉得值得我们注意的基础绘图类起码有6个，下面我分别来详细讲解下这些类。
 
@@ -13,7 +11,7 @@
 
 **Canvas篇**
 
-​		我们从Canvas讲起，Canvas翻译成”画板、画布“，绘制自定义控件，和我们画画类似。巧妇难为无米之炊，没有纸你没法画画吧！无论你是A4纸还是宣纸，首先，你都得有这个画画的前提条件。我们有了Canvas，就可以开始绘制我们的界面了。
+		我们从Canvas讲起，Canvas翻译成”画板、画布“，绘制自定义控件，和我们画画类似。巧妇难为无米之炊，没有纸你没法画画吧！无论你是A4纸还是宣纸，首先，你都得有这个画画的前提条件。我们有了Canvas，就可以开始绘制我们的界面了。
 
 ```java
 //画颜色
@@ -106,7 +104,16 @@ void drawText(String text, float x, float y, Paint paint);
 
 text为要绘制的文字的内容，x和y为要绘制的文字的横坐标和纵坐标。绘制文字要将位置绘制准确，需要使用到文字的基线baseline。
 
-​		画布还可以切割，用户只能看到切割后的内容。
+```javascript
+//画路径
+void drawPath(Path path, Paint paint);
+```
+
+path为要绘制的路径。
+
+
+
+		画布还可以切割，用户只能看到切割后的内容。
 
 ```java
 //通过矩形切割画板
@@ -130,7 +137,7 @@ Region.Op.XOR	//补集显示，就是全集的减去交集部分
 
 **Paint篇**
 
-​		光有画布，没有画笔，也是什么也画不了的，所以接下来，我们要买支好画笔。
+		光有画布，没有画笔，也是什么也画不了的，所以接下来，我们要买支好画笔。
 
 ```java
 Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);	//抗锯齿，更平滑的画笔，应该是支铅笔
@@ -371,7 +378,7 @@ Paint的基本实用方法和技巧
 
 **Bitmap篇**
 
-​		Bitmap是内存中的图像，简单说，就是保存了一个个图像颜色信息的矩阵。让我们看看使用Bitmap都要注意些什么吧！
+		Bitmap是内存中的图像，简单说，就是保存了一个个图像颜色信息的矩阵。让我们看看使用Bitmap都要注意些什么吧！
 
 - BitmapConfig
 
@@ -437,3 +444,258 @@ Paint的基本实用方法和技巧
   ```
 
   这种方式用于通过JNI处理像素后，回传色值数组创建Bitmap。因为磁盘IO是非常耗时的，假设一个图像有1000*1000=100万像素，那么你通过Java的for循环调用setPixel()方法，就要调用100万次输入输出流，在性能上和C/C++相比有9倍左右的差距。因为我们使用native代码是把所有像素点一次性处理好，然后一起打包返回给Java层的，效率自然而然就更高了。colors为所有像素点的色值。offset表示从第几个开始拿，索引是从0开始的。stride为步长，即一行应该显示多少个像素点，它是小于等于width的，否则会报错。比如绘制灰色浮雕效果时，是把每一个像素的R、G和B，用下一个像素点的R、G、B减上一个，然后再加上127，让R、G、B都往中间色值靠拢。至于为什么要加127，学过计算机图形学或计算机图像处理学的应该知道中性灰的概念。而如第二行第一个像素点和第一行最后一个像素点的RGB差异不能作为浮雕效果轮廓，所以要去掉边缘像素，这个stride就是用于舍弃边缘像素的。
+
+
+
+**Drawable篇**
+
+```
+	Drawable，意为”可绘制的“，它可以被绘制到画板上。Android提供了很多种内置的Drawable，你也可以自定义Drawable。那么，它和Bitmap有什么区别呢？显而易见，从它的名字中就体现出它被赋予抽象色彩的存在意义，而Bitmap是直接持有像素的。下面我们就一起看一看Drawable都被分了哪些类吧！
+```
+
+- BitmapDrawable（位图）
+- NinePatchDrawable（九宫格）
+- LayerDrawable（图层）
+- ColorDrawable（颜色）
+- LevelListDrawable（级别列表）
+- GradientDrawable（梯度）
+- StateListDrawable（状态列表）
+- ShapeDrawable（形状）
+
+
+
+```java
+void draw(Canvas canvas);
+```
+
+和View一样，自身都带有draw()方法，用于绘制到Canvas上，这个方法也是自定义Drawable必须重写的。
+
+```java
+void setBounds(int left, int top, int right, int bottom);
+```
+
+设置Drawable的位置，很重要的一个方法。它决定Drawable被绘制到Canvas的什么位置。
+
+```java
+int getIntrinsicWidth();
+```
+
+获取宽度，默认-1。
+
+```java
+int getIntrinsicHeight();
+```
+
+获取高度，默认-1。
+
+```java
+void recycle();
+```
+
+回收资源。
+
+
+
+**Rect篇**
+
+```
+		Rect用来确定被绘制的东西在Canvas的位置。它有4个基本的属性，left、top、right和bottom。这4个属性可以直接被访问，而通过width()和height()方法可以获取它的宽度和高度。
+```
+
+```java
+String flattenToString();
+```
+
+格式化输出。
+
+```java
+int width();
+```
+
+获取宽度。
+
+```java
+int height();
+```
+
+获取高度。
+
+```java
+int centerX();
+```
+
+获取中心点x坐标。
+
+```java
+int centerY();
+```
+
+获取中心点y坐标。
+
+```java
+void set(int left, int top, int right, int bottom);
+```
+
+批量修改矩形边缘值。
+
+```java
+void offset(int dx, int dy);
+```
+
+偏移指定个单位的位置。dx如果为正，则向右偏移，为负，则向左偏移。dy如果为正，则向下偏移，为负，则向上偏移。
+
+```java
+void offsetTo(int newLeft, int newTop);
+```
+
+偏移到具体的位置坐标。newLeft表示矩形的左边要偏移到的新位置的x坐标，newTop表示矩形的上边要偏移到的新位置的y坐标。
+
+```java
+void inset(int left, int top, int right, int bottom);
+```
+
+left、top、right、bottom为正则向内收缩n个单位，为负则向外扩张n个单位。比如面积为9的矩形，如果left、top、right和bottom都为1，则inset后的最终面积为1。
+
+
+
+**Path篇**
+
+```
+		Path表示点的运行轨迹。你画画的时候，笔尖移动到何处，Path就可以帮你记录。
+```
+
+```java
+//移动到某个点，不绘制
+void moveTo(float x, float y);
+```
+
+相当于把笔抬起来，移动到下一个想要绘制的地方。x为要移动到位置的横坐标，y为要移动到位置的纵坐标。
+
+```java
+void rMoveTo(float dx, float dy);
+```
+
+用法和moveTo()方法类似，坐标参照点由(0,0)变更为上一步操作画笔停留的位置，你可以将其想象成(0,0)。
+
+```java
+//绘制一条直线路径
+void lineTo(float x, float y);
+```
+
+画条线到(x,y)。
+
+```java
+void rLineTo(float dx, float dy);
+```
+
+用法和lineTo()方法类似，坐标参照点由(0,0)变更为上一步操作画笔停留的位置，你可以将其想象成(0,0)。
+
+```java
+//绘制一条二阶贝瑟尔曲线路径
+void quadTo(float x1, float y1, float x2, float y2);
+```
+
+(x1,y1)为控制点的坐标，(x2,y2)为结束点的坐标。
+
+```java
+void rQuadTo(float dx1, float dy1, float dx2, float dy2);
+```
+
+用法和quadTo()方法类似，坐标参照点由(0,0)变更为上一步操作画笔停留的位置，你可以将其想象成(0,0)。
+
+```java
+//绘制一条三阶贝瑟尔曲线路径
+void cubicTo(float x1, float y1, float x2, float y2, float x3, float y3);
+```
+
+(x1,y1)为第一个控制点的坐标，(x2,y2)为第二个控制点的坐标，(x3,y3)为结束点的坐标。
+
+```java
+void rCubicTo(float x1, float y1, float x2, float y2, float x3, float y3);
+```
+
+用法和cubicTo()方法类似，坐标参照点由(0,0)变更为上一步操作画笔停留的位置，你可以将其想象成(0,0)。
+
+```java
+//绘制一条圆弧路径
+void arcTo(float left, float top, float right, float bottom, float startAngle, float sweepAngle, boolean forceMoveTo);
+```
+
+left、top、right、bottom为所绘制圆弧的限定范围。startAngle为矩形内切椭圆的旋转角的开始角度。sweepAngle为顺时针扫过的角度。forceMoveTo如果为true的话，上个阶段点的位置直接move到圆弧绘制的起始位置，反之，则还要从上个阶段点的位置绘制一条直线到圆弧的起始位置，相当于调了一次lineTo()方法。
+
+```java
+//关闭路径
+void close();
+```
+
+连接Path的起始点，组成封闭图形。
+
+```java
+//设置填充类型
+void setFillType(FillType ft);
+```
+
+FillType有以下几个枚举值，Path.FillType.WINDING、Path.FillType.EVEN_ODD、Path.FillType.INVERSE_WINDING和Path.FillType.INVERSE_EVEN_ODD。
+
+![image-20200730205911418](http://doramusic.site/images/image-20200730205911418.png)
+
+```java
+//添加一个矩形的路径
+void addRect(RectF rect, Direction dir);
+```
+
+dir有两个枚举值，Path.Direction.CW（顺时针）和Path.Direction.CWW（逆时针），这个值要起作用，需要调用canvas.drawTextOnPath()方法，否则顺时针画跟逆时针画封闭图形没区别，如果路径上有文字就不一样了，因为文字不一定占满整个封闭图形的路径。
+
+```java
+//添加一个椭圆的路径
+void addOval(RectF oval, Direction dir);
+```
+
+用法类似于addRect()。
+
+```java
+//添加一个圆形的路径
+void addCircle(float x, float y, float radius, Direction dir);
+```
+
+用法类似于addRect()。
+
+```java
+//添加一个圆角矩形的路径
+void addRoundRect(RectF rect, float rx, float ry, Direction dir);
+```
+
+用法类似于addRect()。
+
+```java
+//添加一个圆弧的路径
+void addArc(RectF oval, float startAngle, float sweepAngle);
+```
+
+startAngle为矩形内切椭圆的旋转角的开始角度。sweepAngle为顺时针扫过的角度。
+
+```java
+//路径偏移
+void offset(float dx, float dy);
+```
+
+dx为路径在x轴上偏移的距离，左负有正，dy为路径在y轴上平移的距离，上负下正，原路径不保留。
+
+```java
+//给路径再添加一个路径
+void addPath(Path src, float dx, float dy);
+```
+
+dx为路径在x轴上偏移的距离，左负有正，dy为路径在y轴上平移的距离，上负下正。参照offset()方法，偏移后多了添加一个Path的过程，但不代表坐标原点(0,0)以偏移后的位置做参照，后面添加的src不受偏移过程的影响。
+
+```java
+boolean contains(int x, int y);
+```
+
+判断点P(x,y)是否在Path范围内。
+
+```java
+boolean contains(Rect r);
+```
+
+判断矩形r是否属于当前Path，即r的所有点是否都落在Path范围内。
