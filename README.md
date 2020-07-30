@@ -628,7 +628,7 @@ left、top、right、bottom为所绘制圆弧的限定范围。startAngle为矩�
 void close();
 ```
 
-连接Path的起始点，组成封闭图形。
+连接Path的起始点和结束点，组成封闭图形。
 
 ```java
 //设置填充类型
