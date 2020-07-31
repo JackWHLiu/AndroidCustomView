@@ -467,6 +467,7 @@ Paint的基本实用方法和技巧
 - GradientDrawable（梯度）
 - StateListDrawable（状态列表）
 - ShapeDrawable（形状）
+- VectorDrawable（SVG）
 
 
 
